@@ -2,11 +2,17 @@ import tkinter as tk
 from tkinter import ttk, filedialog
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
+from pipeline import ProcessingPipeline
 
 class ImageProcessingApp(tk.Tk):
-    def __init__(self):
+    def __init__(self, pipeline):
         super().__init__()
         self.title('Image Processing Application')
+
+        # Create an instance of the ProcessingPipeline class
+        self.pipeline = pipeline
+
+        self.title('County-mc-Countface')
 
         # Setup frames
         self.setup_frames()
@@ -37,14 +43,29 @@ class ImageProcessingApp(tk.Tk):
         self.open_file_button = tk.Button(self.control_frame, text='Open File', command=self.open_file)
         self.open_file_button.pack()
 
-        # Variable grid setup
+        # Variable grid setup for processing parameters
         self.variable_entries = {}
-        for i in range(5):
-            var_label = tk.Label(self.control_frame, text=f'Var {i+1}')
+
+        # Dictionary of parameter names and their default values
+        self.parameters = {
+            'blur_kernel_size': '101',
+            'brightness_offset': '100',
+            'gaussian_blur': '5',
+            'threshold': '127',
+            'morph_open': '3',
+            'alpha': '1.5',
+            'size_threshold': '25',
+            'connectivity': '4'
+            # Add more parameters as needed
+        }
+
+        for i, (param_name, default_value) in enumerate(self.parameters.items()):
+            var_label = tk.Label(self.control_frame, text=param_name.replace('_', ' ').capitalize())
             var_label.pack()
             var_entry = tk.Entry(self.control_frame)
+            var_entry.insert(0, default_value)  # Set default value
             var_entry.pack()
-            self.variable_entries[f'var{i+1}'] = var_entry
+            self.variable_entries[param_name] = var_entry
 
         self.process_button = tk.Button(self.control_frame, text='Process', command=self.process)
         self.process_button.pack()
@@ -120,12 +141,20 @@ class ImageProcessingApp(tk.Tk):
         pips_frame.pack(fill=tk.X, expand=True)
 
         # Variable to store the selected stage for this slot
-        selected_stage = tk.IntVar()
-        selected_stage.set(1)  # Default to the first stage
+        selected_stage = tk.StringVar()
+        selected_stage.set('original')  # Default to the original stage
+
+        stages = ['original', 'corrected', 'filtered', 'contrast', 'dots_counted', 'original_with_dots']
 
         # Create radiobuttons for the processing stages
-        for i in range(5):
-            pip = tk.Radiobutton(pips_frame, text=f'Stage {i + 1}', variable=selected_stage, value=i + 1)
+        for stage in stages:
+            pip = tk.Radiobutton(
+                pips_frame,
+                text=stage.capitalize(),
+                variable=selected_stage,
+                value=stage,
+                command=lambda s=stage, c=column: self.update_displayed_image(s, c)  # Command to execute on selection
+            )
             pip.pack(side=tk.LEFT)
 
         # Save references to the figure, canvas, and selected_stage variable for later use
@@ -162,6 +191,19 @@ class ImageProcessingApp(tk.Tk):
         # Logic for opening the histogram in a Matplotlib window
         pass
 
+    def update_displayed_image(self, stage, column):
+        # Get the image for the selected stage from the pipeline
+        image = self.pipeline.get_stage_output(stage)
+
+        # Determine which canvas to update based on the column
+        canvas_to_update = self.left_canvas if column == 0 else self.right_canvas
+
+        # Call the method to update the image display
+        self.update_image_display(canvas_to_update, image)
+
 if __name__ == '__main__':
-    app = ImageProcessingApp()
+    # create an instance of the processing pipeline
+    pipeline = ProcessingPipeline()
+
+    app = ImageProcessingApp(pipeline)
     app.mainloop()

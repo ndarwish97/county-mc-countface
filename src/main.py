@@ -5,6 +5,7 @@ from image_processing import load_image  # Assuming your image processing script
 import matplotlib.pyplot as plt
 import os
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from pipeline import ProcessingPipeline
 
 class ExtendedImageProcessingApp(ImageProcessingApp):
     def open_file(self):
@@ -16,6 +17,8 @@ class ExtendedImageProcessingApp(ImageProcessingApp):
 
         # Load the image using image processing function
         image = load_image(file_path)
+
+        self.pipeline.load_image_image(image)  # Update the pipeline with the new image
 
         # Update both image displays
         self.update_image_display(self.left_canvas, image)
@@ -44,7 +47,33 @@ class ExtendedImageProcessingApp(ImageProcessingApp):
         # Redraw the canvas with the new image
         canvas.draw()
 
+    def process(self):
+        # Get the parameters from the entry widgets
+        blur_kernel_size = int(self.variable_entries['blur_kernel_size'].get())
+        brightness_offset = int(self.variable_entries['brightness_offset'].get())
+        gaussian_blur = int(self.variable_entries['gaussian_blur'].get())
+        threshold = int(self.variable_entries['threshold'].get())
+        morph_open = int(self.variable_entries['morph_open'].get())
+        alpha = float(self.variable_entries['alpha'].get())
+        size_threshold = int(self.variable_entries['size_threshold'].get())
+        connectivity = int(self.variable_entries['connectivity'].get())
+
+        # Run the pipeline with the given parameters
+        self.pipeline.run_pipeline(self.working_filename_var.get(), blur_kernel_size, brightness_offset, gaussian_blur,
+                                   threshold, morph_open, alpha, size_threshold, connectivity)
+
+        # Update the image displays with the processed images
+        self.update_image_display(self.left_canvas, self.pipeline.get_stage_output('original_with_dots'))
+        self.update_image_display(self.right_canvas, self.pipeline.get_stage_output('dots_counted'))
+
+        # Update the dot count label
+        self.count_text.set(f'Dot count: {self.pipeline.dot_count}')
+
+
 
 if __name__ == '__main__':
-    app = ExtendedImageProcessingApp()
+    # create an instance of the processing pipeline
+    pipeline = ProcessingPipeline()
+
+    app = ExtendedImageProcessingApp(pipeline)
     app.mainloop()
