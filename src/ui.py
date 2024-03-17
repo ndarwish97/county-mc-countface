@@ -76,8 +76,12 @@ class ImageProcessingApp(tk.Tk):
         self.save_button = tk.Button(self.control_frame, text='Save', command=self.save)
         self.save_button.pack()
 
-        self.log_button = tk.Button(self.control_frame, text='Log', command=self.log)
-        self.log_button.pack()
+        # Additional control buttons and statistics display
+        self.histogram_button = tk.Button(self.control_frame, text='Distance Histogram', command=self.open_histogram)
+        self.histogram_button.pack()
+
+        self.process_connectivity = tk.Button(self.control_frame, text='Process Connectivity', command=self.process_connectivity)
+        self.process_connectivity.pack()
 
         # Filename entries
         self.working_filename_var = tk.StringVar()
@@ -88,10 +92,6 @@ class ImageProcessingApp(tk.Tk):
         self.output_filename_entry.grid(row=0, column=1, sticky='ew')
         self.filename_frame.grid_columnconfigure(0, weight=1)
         self.filename_frame.grid_columnconfigure(1, weight=1)
-
-        # Additional control buttons and statistics display
-        self.histogram_button = tk.Button(self.control_frame, text='Distance Histogram', command=self.open_histogram)
-        self.histogram_button.pack()
 
         # Output statistics labels and text
         self.stats_frame = tk.LabelFrame(self.control_frame, text='Output Statistics')
@@ -176,8 +176,21 @@ class ImageProcessingApp(tk.Tk):
         pass
 
     def open_in_matplotlib(self):
-        # Logic for opening the image in an external Matplotlib window
-        pass
+        # Retrieve the selected stage's name
+        stage_name = self.right_selected_stage.get()
+
+        # Get the image from the pipeline
+        image = self.pipeline.get_stage_output(stage_name)
+
+        # Check if the image exists
+        if image is not None:
+            # Open a new Matplotlib window and show the image
+            plt.figure(f"{stage_name.capitalize()} Stage")
+            plt.imshow(image, cmap='gray')
+            plt.axis('off')  # Hide the axis
+            plt.show()
+        else:
+            print(f"No image available for stage: {stage_name}")
 
     def save(self):
         # Logic for saving the current state
@@ -185,6 +198,10 @@ class ImageProcessingApp(tk.Tk):
 
     def log(self):
         # Logic for logging actions or results
+        pass
+
+    def process_connectivity(self):
+        # Logic for processing the image
         pass
 
     def open_histogram(self):

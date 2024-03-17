@@ -81,7 +81,7 @@ def adjust_contrast(image, alpha):
     return adjusted
 
 
-def count_dots(original_image, processed_image, size_threshold, connectivity=4):
+def count_dots(original_image, processed_image, size_threshold, connectivity):
     """
     Count the number of dots in the processed image based on a size threshold and mark them on both
     the processed image and the original image.
@@ -127,7 +127,7 @@ def count_dots(original_image, processed_image, size_threshold, connectivity=4):
             cv2.rectangle(count_image, (center_x - 1, center_y - 1), (center_x + 1, center_y + 1), (255, 0, 0), -1)
             cv2.rectangle(original_colored, (center_x - 1, center_y - 1), (center_x + 1, center_y + 1), (255, 0, 0), -1)
 
-    return num_dots, count_image, original_colored
+    return num_dots, count_image, original_colored, centroids
 
 
 if __name__ == "__main__":

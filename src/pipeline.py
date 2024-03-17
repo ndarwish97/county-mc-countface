@@ -16,6 +16,19 @@ class ProcessingPipeline:
             'original_with_dots': None
         }
         self.dot_count = None
+        self.centroids = None
+
+    def clear_pipeline(self):
+        self.images = {
+            'original': None,
+            'corrected': None,
+            'filtered': None,
+            'contrast': None,
+            'dots_counted': None,
+            'original_with_dots': None
+        }
+        self.dot_count = None
+        self.centroids = None
 
     def load_image_image(self, image):
         self.images['original'] = image
@@ -37,8 +50,8 @@ class ProcessingPipeline:
     def adjust_contrast(self, alpha):
         self.images['contrast'] = adjust_contrast(self.images['filtered'], alpha)
 
-    def count_dots(self, size_threshold, connectivity=4):
-        self.dot_count, self.images['dots_counted'], self.images['original_with_dots'] = count_dots(
+    def count_dots(self, size_threshold, connectivity):
+        self.dot_count, self.images['dots_counted'], self.images['original_with_dots'], self.centroids = count_dots(
             self.images['original'], self.images['contrast'], size_threshold, connectivity
         )
 
